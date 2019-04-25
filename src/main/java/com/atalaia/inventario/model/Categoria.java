@@ -9,8 +9,9 @@ package com.atalaia.inventario.model;
  *
  * @author Alex
  */
-public class Local {
+public class Categoria {
   private Long id;
+  private String codigo;
   private String nome;
 
   /**
@@ -28,6 +29,24 @@ public class Local {
   }
 
   /**
+   * @return the codigo
+   */
+  public String getCodigo() {
+    return codigo;
+  }
+
+  /**
+   * @param codigo the codigo to set
+   */
+  public void setCodigo(String codigo) throws Exception {
+    if (codigo.length() == 0) {
+      throw new Exception("Código da categoria não preenchido.");
+    }
+    
+    this.codigo = codigo;
+  }
+
+  /**
    * @return the nome
    */
   public String getNome() {
@@ -37,11 +56,8 @@ public class Local {
   /**
    * @param nome the nome to set
    */
-  public void setNome(String nome) throws Exception {
-    if (nome.length() == 0) {
-      throw new Exception("Nome do Local não preenchido.");
-    }
-    
+  public void setNome(String nome) {
     this.nome = nome;
   }
+  
 }

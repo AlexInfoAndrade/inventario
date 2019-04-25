@@ -17,7 +17,6 @@ import javax.faces.context.FacesContext;
  *
  * @author Alex
  */
-
 @ManagedBean(name="LocalMB")
 public class LocalManagedBean {
   private Local local = new Local();

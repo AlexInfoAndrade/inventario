@@ -40,7 +40,7 @@ public class SubLocal {
    */
   public void setNome(String nome) throws Exception {
     if (nome.length() == 0) {
-      throw new Exception("Nome do local não preenchido.");
+      throw new Exception("Nome do Sub-Local não preenchido.");
     }
     
     this.nome = nome;
