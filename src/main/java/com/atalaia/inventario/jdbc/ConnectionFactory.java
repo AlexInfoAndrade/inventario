@@ -1,8 +1,5 @@
-package com.atalaia.inventario.model.jdbc;
+package com.atalaia.inventario.jdbc;
 
-import com.atalaia.inventario.util.InfoSO;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;

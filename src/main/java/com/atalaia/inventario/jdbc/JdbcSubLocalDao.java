@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.atalaia.inventario.model.jdbc;
+package com.atalaia.inventario.jdbc;
 
-import com.atalaia.inventario.model.jdbc.ConnectionFactory;
-import com.atalaia.inventario.model.dao.LocalDao;
-import com.atalaia.inventario.model.Local;
+import com.atalaia.inventario.dao.SubLocalDao;
+import com.atalaia.inventario.model.SubLocal;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
@@ -21,22 +20,24 @@ import java.util.List;
  *
  * @author Alex
  */
-public class JdbcLocalDao implements LocalDao {
+public class JdbcSubLocalDao implements SubLocalDao {
   
-  public static final String TABLE_LOCAL = "inv_local";
+  public static final String TABLE_SUBLOCAL = "inv_sublocal";
   
-  public static final String COLUMN_ID = "lcl_id";
-  public static final String COLUMN_NOME = "lcl_nome";
+  public static final String COLUMN_ID = "slc_id";
+  public static final String COLUMN_NOME = "slc_nome";
+  public static final String COLUMN_LOCAL_ID = "slc_local_id";
   
-  private static final String CREATE_TB_LOCAL = 
-    "CREATE TABLE IF NOT EXISTS " + TABLE_LOCAL
+  private static final String CREATE_TB_SUBLOCAL = 
+    "CREATE TABLE IF NOT EXISTS " + TABLE_SUBLOCAL
     + "(" 
       + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-      + COLUMN_NOME + " TEXT NOT NULL "
+      + COLUMN_NOME + " TEXT NOT NULL, "
+      + COLUMN_LOCAL_ID + " INTEGER"
     + ");"
   ;
   
-  public JdbcLocalDao () {
+  public JdbcSubLocalDao () {
     iniciaTabela();
   }
   
@@ -45,8 +46,7 @@ public class JdbcLocalDao implements LocalDao {
       ConnectionFactory.executaTransacao(new Transacao(){
         @Override
         public void executar(Connection con) throws SQLException, FileNotFoundException, IOException {
-          PreparedStatement statement = con.prepareStatement(
-              CREATE_TB_LOCAL
+          PreparedStatement statement = con.prepareStatement(CREATE_TB_SUBLOCAL
           );
           
           statement.execute();
@@ -60,9 +60,9 @@ public class JdbcLocalDao implements LocalDao {
   }
 
   @Override
-  public List<Local> lista() throws SQLException, FileNotFoundException, IOException {
+  public List<SubLocal> lista() throws SQLException, FileNotFoundException, IOException {
     Connection con = null;
-    List<Local> locais = new ArrayList<>();
+    List<SubLocal> subLocais = new ArrayList<>();
 
     try {
       con = ConnectionFactory.getConnection();
@@ -70,11 +70,14 @@ public class JdbcLocalDao implements LocalDao {
           con.prepareStatement(
               "Select "+COLUMN_ID
               + "\n, "+COLUMN_NOME
-              + "\n From "+TABLE_LOCAL);
+              + "\n, "+COLUMN_LOCAL_ID
+              + "\n From "+TABLE_SUBLOCAL
+      );
+      
       ResultSet rs = statement.executeQuery();
 
       while (rs.next()) {
-        locais.add(instanciar(rs));
+        subLocais.add(instanciar(rs));
       }
 
       rs.close();
@@ -86,13 +89,12 @@ public class JdbcLocalDao implements LocalDao {
       con.close();
     }
 
-    return locais;
+    return subLocais;
   }
-
-  @Override
-  public Local busca(long codigo) throws SQLException, FileNotFoundException, IOException {
+  
+  public List<SubLocal> lista(long codigoLocal) throws SQLException, FileNotFoundException, IOException {
     Connection con = null;
-    Local local;
+    List<SubLocal> subLocais = new ArrayList<>();
 
     try {
       con = ConnectionFactory.getConnection();
@@ -100,7 +102,42 @@ public class JdbcLocalDao implements LocalDao {
           con.prepareStatement(
               "Select "+COLUMN_ID
               + "\n, "+COLUMN_NOME
-              + "\n From "+TABLE_LOCAL
+              + "\n, "+COLUMN_LOCAL_ID
+              + "\n From "+TABLE_SUBLOCAL
+              + "\n Where "+COLUMN_LOCAL_ID+" = ?"
+      );
+      statement.setLong(1, codigoLocal);
+      ResultSet rs = statement.executeQuery();
+
+      while (rs.next()) {
+        subLocais.add(instanciar(rs));
+      }
+
+      rs.close();
+      statement.close();
+
+    } catch (Exception e) {
+      throw new SQLException(e);
+    } finally {
+      con.close();
+    }
+
+    return subLocais;
+  }
+
+  @Override
+  public SubLocal busca(long codigo) throws SQLException, FileNotFoundException, IOException {
+    Connection con = null;
+    SubLocal subLocal;
+
+    try {
+      con = ConnectionFactory.getConnection();
+      PreparedStatement statement =
+          con.prepareStatement(
+              "Select "+COLUMN_ID
+              + "\n, "+COLUMN_NOME
+              + "\n, "+COLUMN_LOCAL_ID
+              + "\n From "+TABLE_SUBLOCAL
               + "\n Where "+COLUMN_ID+" = ?"
       );
       
@@ -108,7 +145,7 @@ public class JdbcLocalDao implements LocalDao {
       ResultSet rs = statement.executeQuery();
 
       if (rs.next()) {
-        local = instanciar(rs);
+        subLocal = instanciar(rs);
       } else {
         throw new SQLException("Nenhum registro encontrado.");
       }
@@ -122,29 +159,31 @@ public class JdbcLocalDao implements LocalDao {
       con.close();
     }
 
-    return local;
+    return subLocal;
   }
   
-  private Local instanciar(ResultSet rs) throws Exception {
-    Local l = new Local();
+  private SubLocal instanciar(ResultSet rs) throws Exception {
+    SubLocal l = new SubLocal();
     
     l.setId(rs.getLong(COLUMN_ID));
     l.setNome(rs.getString(COLUMN_NOME));
+    l.setLocal(new JdbcLocalDao().busca(rs.getLong(COLUMN_LOCAL_ID)));
     
     return l;
   }
 
   @Override
-  public boolean adiciona(final Local local) throws SQLException, FileNotFoundException, IOException {
+  public boolean adiciona(final SubLocal subLocal) throws SQLException, FileNotFoundException, IOException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
       public void executar(Connection con) throws SQLException, FileNotFoundException, IOException {
         PreparedStatement statement = con.prepareStatement(
-          "Insert Into "+TABLE_LOCAL
-          + "\n(`"+COLUMN_NOME+"`) Values (?)"
+          "Insert Into "+TABLE_SUBLOCAL
+          + "\n(`"+COLUMN_NOME+"`, `"+COLUMN_LOCAL_ID+"`) Values (?,?)"
         );
 
-        statement.setString(1, local.getNome());
+        statement.setString(1, subLocal.getNome());
+        statement.setLong(2, subLocal.getLocal().getId());
 
         statement.execute();
         statement.close();
@@ -153,17 +192,18 @@ public class JdbcLocalDao implements LocalDao {
   }
 
   @Override
-  public boolean altera(final Local local) throws SQLException, FileNotFoundException, IOException {
+  public boolean altera(final SubLocal subLocal) throws SQLException, FileNotFoundException, IOException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
       public void executar(Connection con) throws SQLException, FileNotFoundException, IOException {
         PreparedStatement statement = con.prepareStatement(
-          "Update "+TABLE_LOCAL+" Set "+COLUMN_NOME+" = ? \n"
+          "Update "+TABLE_SUBLOCAL+" Set "+COLUMN_NOME+" = ?, "+COLUMN_LOCAL_ID+" = ? \n"
           + "Where "+COLUMN_ID+" = ?"
         );
 
-        statement.setString(1, local.getNome());
-        statement.setLong(2, local.getId());
+        statement.setString(1, subLocal.getNome());
+        statement.setLong(2, subLocal.getLocal().getId());
+        statement.setLong(3, subLocal.getId());
 
         statement.execute();
         statement.close();
@@ -172,16 +212,16 @@ public class JdbcLocalDao implements LocalDao {
   }
 
   @Override
-  public boolean remove(final Local local) throws SQLException, FileNotFoundException, IOException {
+  public boolean remove(final SubLocal subLocal) throws SQLException, FileNotFoundException, IOException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
       public void executar(Connection con) throws SQLException, FileNotFoundException, IOException {
         PreparedStatement statement = con.prepareStatement(
-          "Delete From "+TABLE_LOCAL
+          "Delete From "+TABLE_SUBLOCAL
           + "\n Where "+COLUMN_ID+" = ?"
         );
 
-        statement.setLong(1, local.getId());
+        statement.setLong(1, subLocal.getId());
 
         statement.execute();
         statement.close();

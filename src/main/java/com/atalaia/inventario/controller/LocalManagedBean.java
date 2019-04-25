@@ -5,7 +5,7 @@
  */
 package com.atalaia.inventario.controller;
 
-import com.atalaia.inventario.model.jdbc.JdbcLocalDao;
+import com.atalaia.inventario.jdbc.JdbcLocalDao;
 import com.atalaia.inventario.model.Local;
 import java.sql.SQLException;
 import java.util.List;

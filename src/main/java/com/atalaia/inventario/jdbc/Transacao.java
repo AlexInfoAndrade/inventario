@@ -1,4 +1,4 @@
-package com.atalaia.inventario.model.jdbc;
+package com.atalaia.inventario.jdbc;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
