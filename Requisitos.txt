@@ -1,0 +1,215 @@
+Gerenciador de Inventário
+
+Usar Maven, projeto JavaEE
+Usando SQLite acesso HTTP para ter concorrencia
+	deverei criar o projeto em forma WEB(já tinha pensado nisso), pode ser bom
+	os protocolos WEB e eu devemos controlar a concorrencia de requesições,
+	dependerá de ter o tom cat instalado e configurar a estrutura para acesso na rede
+Intalar TomCat para ter o gerenciador WEB
+Iniciar importação apenas de txt, depois ir para excel e libre
+
+Classes:
+	*Principal{
+		*Acesso ao outros modulos.
+		*Inventario{
+			*Importação de lotes dos TXTs, se lote não mapeado avisar e incluir, nunca deixar de importar um lote.
+			*Imprimir automaticamente os lotes importados, fazer fila com cada lotes que foi importado.
+			Fut*Perguntar se lote repetido deve ser gravada no banco e perguntar se é para marcar analisar = Sim
+			 Fut*mudando status para 3 do lote
+			Fut*Na importação instanciar desempenho e incrementar todos os campos quando ocorrerem,
+			 Fut*gravar zero se não ocorrer neste momento o lote pode não existir, verificar para incluir ou alterar.
+			*Ao importar verificar categoria, se informada, e avisar se estiver diferente entre do produto e do lote, no final da importação.
+			*Deletar inventário junto deletar lotes e desempenho
+			*Acessar PainelStatus para consulta.
+			
+			*ControleLotes{
+				*Lançar lote inicial e final para calculos
+				*Lançar lotes extraviados e observação.
+				Fut*Poderá cadastrar locais e subLocais
+				Fut*Poderá deletar local e os subLocais pertencentes a ele, ou tudo.
+				Fut*Poderá indicar de Local do lote ou sequencia de lotes.
+					Fut*Ao selecionar o inicio da sequencia, ir incrementando até
+					 Fut*chegar ao lote que ainda não tenha sido mapeado, não deixando
+					 Fut*aparecer lotes que já estejam mapeados na sequencia.
+				Fut*Poderá indicar de SubLocal do lote ou sequencia de lotes.
+				Fut*Poderá indicar de Categoria do lote ou sequencia de lotes.
+			}
+
+			*ExportaInventario{
+				*Exporta os códigos e quantidades auditadas em arquivo txt, 
+				* acumulando as quantidades por código.
+			}
+			
+			*LotesInventario{
+				*Pesquisar itens de lotes e poder alterar e excluir linhas
+				*Buscar lotes por: Local, subLocal e carregar lotes que pertenção a eles
+				*Alteração campo qnt_auditada, os campos não preenchidos seram
+				 *preenchidos com a qnt_operador quando apertar o botão auditado para salvar,
+				 *se apertar apenas em salvar irá salvar sem preencher as qnt_auditadas em branco
+				 *e salvando as preenchidas, significando continuar a auditoria depois.
+				*Quando salvar auditado alterar campo analisar = Não e mudando status para 3 do lote
+				*Gerar PDF do lote
+				*Gravar status do lote de acordo com a situação dele.
+				*Chamar ControleLotes para indicar lote extraviado e seus recursos.
+				Fut*Imprime lote para auditoria ajustando para resolução da impressora.
+				*Deletar Lote
+					Fut*Excluir desempenho do lote também.
+				*Verificação de lotes impressos
+				Fut*Na alteração instanciar desempenho e incrementar todos os campos quando ocorrerem,
+				 Fut*gravar zero se não ocorrer, neste momento o desempenho do lote já existirá por cauda da importação do txt.
+				Fut*Se houver reimportação de lote, acumulo, gravar na observação desempenho junto com o operador anterior e o atual se mudar,
+				 Fut*manter conteudo anteriro de observação, separar por |
+				*Se o lote já estiver auditado avisar mas permitir alterar
+				Fut*Gravar na tabela desempenho que teve alteração em lote auditado, mantendo conteudo anteriro de observação, separar por |
+			}
+			
+			*LoteManual{
+				*Indicação do lote a ser inserido e seus itens.
+				*Lançar coletagem manualmente de lote como no coletor
+				*Se lote não mapeado avisar e incluir.
+			}(Poderei usar o recurso de leitor de Código de barras nesta pagina, teria assim um coletor para smartphone)
+		}
+		
+		*ImportarProdutos{
+			*Importação dos dados de cadastro dos produtos da loja
+			Fut*Pelos dados de produtos cadastrar as categorias se informada
+			*Importação por txt
+			*Poder deletar produtos, junto deletar categorias.
+			Fut*Importação por xls ou ods
+			Fut*Exportar cadastro para uso no coletor
+		}
+		
+		*PainelStatus{
+			*status(
+				1-naoColetados-Vermelho
+				0-estraviados-Azul
+				2-coletadoNaoAuditaco-Amarelo
+				3-impressosNaoAuditado-Roxo
+				4-coletadoAuditado-Verde
+			)
+			*Formato da tela(
+				Painel com Local, dentro os SubLocais com coluna e linhas até o limite do painel.
+					Titulo do painel o nome do local, cor da borda representando o status.
+				Painel lotes com coluna e linhas até o limite do painel.
+				Parecido com o FDM, quadrado com as cores do status e com dados escrito dentro.
+			)
+			*Verificar lotes na base
+			*Verificar lotes faltantes %
+			Fut*Painel com indicadores sobre o inventário
+			Fut*Indicação geral lote status Local, através da média do valor do status dos lotes
+			Fut*Indicação geral lote status SubLocal, através da média do valor do status dos lotes
+			Fut*Clicando em cima do SubLocal mostrar apenas lotes que pertenção a ele, voltar a todos
+			 Fut*os lotes sozinho depois de um tempo.
+			Fut*Indicação status lotes
+			Fut*Porcentagem concluida e de alteração de valor e peças do estoque se informado,
+			 Fut*analisar atraves de soma das peças de antes e das peças atuais.
+		}
+	}
+	
+Tabelas identificadas:
+	*produto(
+		id, primario
+		ean, not null
+		descricao, not null
+		preco_custo,
+		preco_venda,
+		estoque,
+		catategoria_id
+	)
+	
+	**local(
+		id, primario
+		nome
+	)
+	
+	**sub_local(
+		id, primario
+		nome,
+		local_id
+	)
+	
+	*categoria(
+		id, primario
+		codigo,
+		nome
+	)
+	
+	*inventario(
+		id, primario
+		ean,
+		lote_id,
+		qnt_operador,
+		qnt_auditor,
+		analisar [Sim, Não]
+	)
+	
+	*desempenho(
+		id, primario
+		lote_id, not null
+		qnt_produto_sem_cadastro, not null
+		qnt_produto_categoria_errada, not null
+		qnt_produto_alterado, not null
+		qnt_descarga_lote, not null
+		observação
+		
+		//qnt_produto, //Pode ser calculado
+		//qnt_quantidade_alterada, //Pode ser calculado
+		//qnt_lote, //Pode ser calculado
+	)
+	
+	*categoria_lote(
+		id,
+		lote_id,
+		categoria_id
+	)
+	
+	*lote(
+		id, primario
+		lote, not null
+		operador,
+		auditor,
+		local_id,
+		sub_local_id,
+		status not null
+			*status(
+				1-naoColetados-Vermelho
+				0-estraviados-Azul
+				2-coletadoNaoAuditaco-Amarelo
+				3-impressosNaoAuditado-Roxo
+				4-coletadoAuditado-Verde
+			)
+	)
+	
+/*Metódo para ler Código de Barras pelo celular, usar nesse projeto
+//Fonte do site http://www.auere.com.br/testes/barcode.php
+<!DOCTYPE html>
+<html lang="pt-Br">
+    <head>
+        <meta charset="utf-8" />
+        <title>Código de Barras</title>
+    </head>
+    <body>
+        <form action="#" method="post">
+            Código de barras
+            (<a href="http://zxing.appspot.com/scan?ret=http://www.auere.com.br/testes/barcode.php?codigo={CODE}">Leitor</a>):
+            <input type="text" name="cod" value="" />
+        </form>
+    </body>
+</html>
+
+//Exemplo completo php
+<!DOCTYPE html>
+<html lang="pt-Br">
+    <head>
+        <meta charset="utf-8" />
+        <title>Código de Barras</title>
+    </head>
+    <body>
+        <form action="#" method="post">
+            Código de barras
+            (<a href="http://zxing.appspot.com/scan?ret=http://www.seu-dominio.com.br/seu-arquivo.php?codigo={CODE}">Leitor</a>):
+            <input type="text" name="cod" value="<?= $_GET['codigo'] ?>" />
+        </form>
+    </body>
+</html>
+*/
