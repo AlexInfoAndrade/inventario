@@ -5,7 +5,6 @@
  */
 package com.atalaia.inventario.jdbc;
 
-import com.atalaia.inventario.jdbc.ConnectionFactory;
 import com.atalaia.inventario.dao.LocalDao;
 import com.atalaia.inventario.model.Local;
 import java.io.FileNotFoundException;
