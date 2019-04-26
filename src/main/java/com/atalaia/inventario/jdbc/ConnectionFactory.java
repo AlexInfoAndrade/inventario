@@ -16,10 +16,8 @@ public class ConnectionFactory {
    *
    * @return Conexão estabelecida
    * @throws SQLException Erros de SQL
-   * @throws FileNotFoundException Arquivo não encontrado
-   * @throws IOException Erro leitura escrita
    */
-  public static Connection getConnection() throws SQLException, FileNotFoundException, IOException {
+  public static Connection getConnection() throws SQLException {
     try {
       InputStream inputStream = ConnectionFactory.class.getClassLoader().
           getResourceAsStream(DB_PROPERTIES);
@@ -39,7 +37,7 @@ public class ConnectionFactory {
       Class.forName(driver);
 
       return DriverManager.getConnection(url, p);
-    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
       throw new SQLException(e);
     }
   }
@@ -48,13 +46,10 @@ public class ConnectionFactory {
    * Executa uma trasação implementa da interface Transação.
    *
    * @param transacao implementação da interface Transação
-   * @throws FileNotFoundException Arquivo não encotrado
    * @throws SQLException Erros de SQL
-   * @throws IOException Erro leitura escrita
    * @return Verdadeiro se a transação for executada, caso contrário retorna falso.
    */
-  public static boolean executaTransacao(Transacao transacao)
-      throws FileNotFoundException, SQLException, IOException {
+  public static boolean executaTransacao(Transacao transacao) throws SQLException {
     Connection con = getConnection();
 
     try {

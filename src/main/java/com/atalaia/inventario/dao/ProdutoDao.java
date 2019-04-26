@@ -5,7 +5,7 @@
  */
 package com.atalaia.inventario.dao;
 
-import com.atalaia.inventario.model.Categoria;
+import com.atalaia.inventario.model.Produto;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -13,24 +13,24 @@ import java.util.List;
  *
  * @author Alex
  */
-public interface CategoriaDao {
+public interface ProdutoDao {
   
   /**
-   * Lista com os dados da categoria do banco.
+   * Lista com os dados do produto do banco.
    * @return List recuperado do banco.
    * @throws SQLException
    */
-  List<Categoria> lista() throws SQLException;
+  List<Produto> lista() throws SQLException;
   
   /**
-   * Busca uma categoria com o código informado.
+   * Busca um produto com o código informado.
    * @param codigo Código do objeto a recuperar do banco.
    * @return objeto se encontrado.
    * @throws SQLException
    */
-  Categoria busca(long codigo) throws SQLException;
+  Produto busca(long codigo) throws SQLException;
   
-  boolean adiciona(Categoria categoria) throws SQLException;
-  boolean altera(Categoria categoria) throws SQLException;
-  boolean remove(Categoria categoria) throws SQLException;
+  boolean adiciona(Produto produto) throws SQLException;
+  boolean altera(Produto produto) throws SQLException;
+  boolean remove(Produto produto) throws SQLException;
 }

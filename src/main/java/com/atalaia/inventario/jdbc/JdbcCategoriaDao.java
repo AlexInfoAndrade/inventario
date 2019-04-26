@@ -5,10 +5,8 @@
  */
 package com.atalaia.inventario.jdbc;
 
-import com.atalaia.inventario.dao.LocalDao;
-import com.atalaia.inventario.model.Local;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import com.atalaia.inventario.dao.CategoriaDao;
+import com.atalaia.inventario.model.Categoria;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,22 +18,24 @@ import java.util.List;
  *
  * @author Alex
  */
-public class JdbcLocalDao implements LocalDao {
+public class JdbcCategoriaDao implements CategoriaDao {
   
-  public static final String TABLE_LOCAL = "inv_local";
+  public static final String TABLE_CATEGORIA = "inv_categoria";
   
-  public static final String COLUMN_ID = "lcl_id";
-  public static final String COLUMN_NOME = "lcl_nome";
+  public static final String COLUMN_ID = "cat_id";
+  public static final String COLUMN_CODIGO = "cat_codigo";
+  public static final String COLUMN_NOME = "cat_nome";
   
-  private static final String CREATE_TB_LOCAL = 
-    "CREATE TABLE IF NOT EXISTS " + TABLE_LOCAL
+  private static final String CREATE_TB_CATEGORIA = 
+    "CREATE TABLE IF NOT EXISTS " + TABLE_CATEGORIA
     + "(" 
       + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-      + COLUMN_NOME + " TEXT NOT NULL "
+      + COLUMN_CODIGO + " INTEGER NOT NULL, "
+      + COLUMN_NOME + " TEXT "
     + ");"
   ;
   
-  public JdbcLocalDao () {
+  public JdbcCategoriaDao () {
     iniciaTabela();
   }
   
@@ -45,7 +45,7 @@ public class JdbcLocalDao implements LocalDao {
         @Override
         public void executar(Connection con) throws SQLException {
           PreparedStatement statement = con.prepareStatement(
-              CREATE_TB_LOCAL
+              CREATE_TB_CATEGORIA
           );
           
           statement.execute();
@@ -59,21 +59,22 @@ public class JdbcLocalDao implements LocalDao {
   }
 
   @Override
-  public List<Local> lista() throws SQLException {
+  public List<Categoria> lista() throws SQLException {
     Connection con = null;
-    List<Local> locais = new ArrayList<>();
+    List<Categoria> categorias = new ArrayList<>();
 
     try {
       con = ConnectionFactory.getConnection();
       PreparedStatement statement =
           con.prepareStatement(
               "Select "+COLUMN_ID
+              + "\n, "+COLUMN_CODIGO
               + "\n, "+COLUMN_NOME
-              + "\n From "+TABLE_LOCAL);
+              + "\n From "+TABLE_CATEGORIA);
       ResultSet rs = statement.executeQuery();
 
       while (rs.next()) {
-        locais.add(instanciar(rs));
+        categorias.add(instanciar(rs));
       }
 
       rs.close();
@@ -85,21 +86,22 @@ public class JdbcLocalDao implements LocalDao {
       con.close();
     }
 
-    return locais;
+    return categorias;
   }
 
   @Override
-  public Local busca(long codigo) throws SQLException {
+  public Categoria busca(long codigo) throws SQLException {
     Connection con = null;
-    Local local;
+    Categoria categoria;
 
     try {
       con = ConnectionFactory.getConnection();
       PreparedStatement statement =
           con.prepareStatement(
               "Select "+COLUMN_ID
+              + "\n, "+COLUMN_CODIGO
               + "\n, "+COLUMN_NOME
-              + "\n From "+TABLE_LOCAL
+              + "\n From "+TABLE_CATEGORIA
               + "\n Where "+COLUMN_ID+" = ?"
       );
       
@@ -107,7 +109,7 @@ public class JdbcLocalDao implements LocalDao {
       ResultSet rs = statement.executeQuery();
 
       if (rs.next()) {
-        local = instanciar(rs);
+        categoria = instanciar(rs);
       } else {
         throw new SQLException("Nenhum registro encontrado.");
       }
@@ -121,29 +123,67 @@ public class JdbcLocalDao implements LocalDao {
       con.close();
     }
 
-    return local;
+    return categoria;
   }
   
-  private Local instanciar(ResultSet rs) throws Exception {
-    Local l = new Local();
+  public Categoria busca(String codCategoria) throws SQLException {
+    Connection con = null;
+    Categoria categoria;
+
+    try {
+      con = ConnectionFactory.getConnection();
+      PreparedStatement statement =
+          con.prepareStatement(
+              "Select "+COLUMN_ID
+              + "\n, "+COLUMN_CODIGO
+              + "\n, "+COLUMN_NOME
+              + "\n From "+TABLE_CATEGORIA
+              + "\n Where "+COLUMN_CODIGO+" = ?"
+      );
+      
+      statement.setString(1, codCategoria);
+      ResultSet rs = statement.executeQuery();
+
+      if (rs.next()) {
+        categoria = instanciar(rs);
+      } else {
+        throw new SQLException("Nenhum registro encontrado.");
+      }
+
+      rs.close();
+      statement.close();
+
+    } catch (Exception e) {
+      throw new SQLException(e);
+    } finally {
+      con.close();
+    }
+
+    return categoria;
+  }
+  
+  private Categoria instanciar(ResultSet rs) throws Exception {
+    Categoria c = new Categoria();
     
-    l.setId(rs.getLong(COLUMN_ID));
-    l.setNome(rs.getString(COLUMN_NOME));
+    c.setId(rs.getLong(COLUMN_ID));
+    c.setCodigo(rs.getString(COLUMN_CODIGO));
+    c.setNome(rs.getString(COLUMN_NOME));
     
-    return l;
+    return c;
   }
 
   @Override
-  public boolean adiciona(final Local local) throws SQLException {
+  public boolean adiciona(final Categoria categoria) throws SQLException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
       public void executar(Connection con) throws SQLException {
         PreparedStatement statement = con.prepareStatement(
-          "Insert Into "+TABLE_LOCAL
-          + "\n(`"+COLUMN_NOME+"`) Values (?)"
+          "Insert Into "+TABLE_CATEGORIA
+          + "\n(`"+COLUMN_CODIGO+"`, `"+COLUMN_NOME+"`) Values (?,?)"
         );
 
-        statement.setString(1, local.getNome());
+        statement.setString(1, categoria.getCodigo());
+        statement.setString(2, categoria.getNome());
 
         statement.execute();
         statement.close();
@@ -152,17 +192,18 @@ public class JdbcLocalDao implements LocalDao {
   }
 
   @Override
-  public boolean altera(final Local local) throws SQLException {
+  public boolean altera(final Categoria categoria) throws SQLException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
       public void executar(Connection con) throws SQLException {
         PreparedStatement statement = con.prepareStatement(
-          "Update "+TABLE_LOCAL+" Set "+COLUMN_NOME+" = ? \n"
+          "Update "+TABLE_CATEGORIA+" Set "+COLUMN_CODIGO+" = ?, "+COLUMN_NOME+" = ? \n"
           + "Where "+COLUMN_ID+" = ?"
         );
 
-        statement.setString(1, local.getNome());
-        statement.setLong(2, local.getId());
+        statement.setString(1, categoria.getCodigo());
+        statement.setString(2, categoria.getNome());
+        statement.setLong(3, categoria.getId());
 
         statement.execute();
         statement.close();
@@ -171,16 +212,16 @@ public class JdbcLocalDao implements LocalDao {
   }
 
   @Override
-  public boolean remove(final Local local) throws SQLException {
+  public boolean remove(final Categoria categoria) throws SQLException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
       public void executar(Connection con) throws SQLException {
         PreparedStatement statement = con.prepareStatement(
-          "Delete From "+TABLE_LOCAL
+          "Delete From "+TABLE_CATEGORIA
           + "\n Where "+COLUMN_ID+" = ?"
         );
 
-        statement.setLong(1, local.getId());
+        statement.setLong(1, categoria.getId());
 
         statement.execute();
         statement.close();

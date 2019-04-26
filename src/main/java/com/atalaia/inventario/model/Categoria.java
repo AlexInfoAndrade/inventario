@@ -13,6 +13,14 @@ public class Categoria {
   private Long id;
   private String codigo;
   private String nome;
+  
+  public Categoria () {
+    this.codigo = "0";
+  }
+  
+  public boolean isVazia () {
+    return codigo.equals("0");
+  }
 
   /**
    * @return the id

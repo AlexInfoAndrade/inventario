@@ -45,7 +45,7 @@ public class JdbcSubLocalDao implements SubLocalDao {
     try {
       ConnectionFactory.executaTransacao(new Transacao(){
         @Override
-        public void executar(Connection con) throws SQLException, FileNotFoundException, IOException {
+        public void executar(Connection con) throws SQLException {
           PreparedStatement statement = con.prepareStatement(CREATE_TB_SUBLOCAL
           );
           
@@ -53,14 +53,14 @@ public class JdbcSubLocalDao implements SubLocalDao {
           statement.close();
         }
       });
-    } catch (SQLException | IOException ex) {
+    } catch (SQLException ex) {
       System.out.println("Erro ao criar tabela:\n"+ex.getMessage());
       ex.printStackTrace();
     }
   }
 
   @Override
-  public List<SubLocal> lista() throws SQLException, FileNotFoundException, IOException {
+  public List<SubLocal> lista() throws SQLException {
     Connection con = null;
     List<SubLocal> subLocais = new ArrayList<>();
 
@@ -92,7 +92,7 @@ public class JdbcSubLocalDao implements SubLocalDao {
     return subLocais;
   }
   
-  public List<SubLocal> lista(long codigoLocal) throws SQLException, FileNotFoundException, IOException {
+  public List<SubLocal> lista(long codigoLocal) throws SQLException {
     Connection con = null;
     List<SubLocal> subLocais = new ArrayList<>();
 
@@ -126,7 +126,7 @@ public class JdbcSubLocalDao implements SubLocalDao {
   }
 
   @Override
-  public SubLocal busca(long codigo) throws SQLException, FileNotFoundException, IOException {
+  public SubLocal busca(long codigo) throws SQLException {
     Connection con = null;
     SubLocal subLocal;
 
@@ -163,20 +163,20 @@ public class JdbcSubLocalDao implements SubLocalDao {
   }
   
   private SubLocal instanciar(ResultSet rs) throws Exception {
-    SubLocal l = new SubLocal();
+    SubLocal sl = new SubLocal();
     
-    l.setId(rs.getLong(COLUMN_ID));
-    l.setNome(rs.getString(COLUMN_NOME));
-    l.setLocal(new JdbcLocalDao().busca(rs.getLong(COLUMN_LOCAL_ID)));
+    sl.setId(rs.getLong(COLUMN_ID));
+    sl.setNome(rs.getString(COLUMN_NOME));
+    sl.setLocal(new JdbcLocalDao().busca(rs.getLong(COLUMN_LOCAL_ID)));
     
-    return l;
+    return sl;
   }
 
   @Override
-  public boolean adiciona(final SubLocal subLocal) throws SQLException, FileNotFoundException, IOException {
+  public boolean adiciona(final SubLocal subLocal) throws SQLException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
-      public void executar(Connection con) throws SQLException, FileNotFoundException, IOException {
+      public void executar(Connection con) throws SQLException {
         PreparedStatement statement = con.prepareStatement(
           "Insert Into "+TABLE_SUBLOCAL
           + "\n(`"+COLUMN_NOME+"`, `"+COLUMN_LOCAL_ID+"`) Values (?,?)"
@@ -192,10 +192,10 @@ public class JdbcSubLocalDao implements SubLocalDao {
   }
 
   @Override
-  public boolean altera(final SubLocal subLocal) throws SQLException, FileNotFoundException, IOException {
+  public boolean altera(final SubLocal subLocal) throws SQLException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
-      public void executar(Connection con) throws SQLException, FileNotFoundException, IOException {
+      public void executar(Connection con) throws SQLException {
         PreparedStatement statement = con.prepareStatement(
           "Update "+TABLE_SUBLOCAL+" Set "+COLUMN_NOME+" = ?, "+COLUMN_LOCAL_ID+" = ? \n"
           + "Where "+COLUMN_ID+" = ?"
@@ -212,10 +212,10 @@ public class JdbcSubLocalDao implements SubLocalDao {
   }
 
   @Override
-  public boolean remove(final SubLocal subLocal) throws SQLException, FileNotFoundException, IOException {
+  public boolean remove(final SubLocal subLocal) throws SQLException {
     return ConnectionFactory.executaTransacao(new Transacao(){
       @Override
-      public void executar(Connection con) throws SQLException, FileNotFoundException, IOException {
+      public void executar(Connection con) throws SQLException {
         PreparedStatement statement = con.prepareStatement(
           "Delete From "+TABLE_SUBLOCAL
           + "\n Where "+COLUMN_ID+" = ?"
