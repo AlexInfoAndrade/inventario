@@ -182,7 +182,6 @@ public class JdbcProdutoDao implements ProdutoDao {
   
   private Produto instanciar(ResultSet rs) throws Exception {
     Produto p = new Produto();
-    String codCategoria = rs.getString(COLUMN_CATEGORIA_ID);
     
     p.setId(rs.getLong(COLUMN_ID));
     p.setEan(rs.getString(COLUMN_EAN));
@@ -190,27 +189,91 @@ public class JdbcProdutoDao implements ProdutoDao {
     p.setValorCusto(rs.getFloat(COLUMN_VALOR_CUSTO));
     p.setValorVenda(rs.getFloat(COLUMN_VALOR_VENDA));
     p.setEstoque(rs.getFloat(COLUMN_ESTOQUE));
-    if (!codCategoria.equals("0")) {
-      p.setCategoria(new JdbcCategoriaDao().busca(codCategoria));
-    }
+    p.setCategoria(
+        new JdbcCategoriaDao().busca(rs.getString(COLUMN_CATEGORIA_ID))
+    );
     
     return p;
   }
 
   @Override
-  public boolean adiciona(Produto produto) throws SQLException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    //Fiz essa alteração de casa como teste....
+  public boolean adiciona(final Produto produto) throws SQLException {
+    return ConnectionFactory.executaTransacao(new Transacao(){
+      @Override
+      public void executar(Connection con) throws SQLException {
+        PreparedStatement statement = con.prepareStatement(
+          "Insert Into "+TABLE_PRODUTO
+          + "\n ( "
+          + "\n  `"+COLUMN_EAN+"`"
+          + "\n, `"+COLUMN_DESCRICAO+"`"
+          + "\n, `"+COLUMN_VALOR_CUSTO+"`"
+          + "\n, `"+COLUMN_VALOR_VENDA+"`"
+          + "\n, `"+COLUMN_ESTOQUE+"`"
+          + "\n, `"+COLUMN_CATEGORIA_ID+"`"
+          + "\n ) "
+          + "Values (?,?,?,?,?,?)"
+        );
+
+        statement.setString(1, produto.getEan());
+        statement.setString(2, produto.getDescricao());
+        statement.setFloat(3, produto.getValorCusto());
+        statement.setFloat(4, produto.getValorVenda());
+        statement.setFloat(5, produto.getEstoque());
+        statement.setLong(6, produto.getCategoria().getId());
+
+        statement.execute();
+        statement.close();
+      }
+	});
   }
 
   @Override
-  public boolean altera(Produto produto) throws SQLException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public boolean altera(final Produto produto) throws SQLException {
+    return ConnectionFactory.executaTransacao(new Transacao(){
+      @Override
+      public void executar(Connection con) throws SQLException {
+        PreparedStatement statement = con.prepareStatement(
+          "Update "+TABLE_PRODUTO
+          + "\n Set "
+          + "\n  "+COLUMN_EAN          +" = ?"
+          + "\n, "+COLUMN_DESCRICAO    +" = ?"
+          + "\n, "+COLUMN_VALOR_CUSTO  +" = ?"
+          + "\n, "+COLUMN_VALOR_VENDA  +" = ?"
+          + "\n, "+COLUMN_ESTOQUE      +" = ?"
+          + "\n, "+COLUMN_CATEGORIA_ID +" = ?"
+          + "\n Where "+COLUMN_ID      +" = ?"
+        );
+
+        statement.setString(1, produto.getEan());
+        statement.setString(2, produto.getDescricao());
+        statement.setFloat(3, produto.getValorCusto());
+        statement.setFloat(4, produto.getValorVenda());
+        statement.setFloat(5, produto.getEstoque());
+        statement.setLong(6, produto.getCategoria().getId());
+        statement.setLong(7, produto.getId());
+
+        statement.execute();
+        statement.close();
+      }
+	});
   }
 
   @Override
-  public boolean remove(Produto produto) throws SQLException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public boolean remove(final Produto produto) throws SQLException {
+    return ConnectionFactory.executaTransacao(new Transacao(){
+      @Override
+      public void executar(Connection con) throws SQLException {
+        PreparedStatement statement = con.prepareStatement(
+          "Delete From "+TABLE_PRODUTO
+          + "\n Where "+COLUMN_ID+" = ?"
+        );
+
+        statement.setLong(1, produto.getId());
+
+        statement.execute();
+        statement.close();
+      }
+	});
   }
   
 }

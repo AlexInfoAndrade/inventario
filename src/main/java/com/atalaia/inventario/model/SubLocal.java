@@ -13,6 +13,11 @@ public class SubLocal {
   private Long id;
   private String nome;
   private Local local;
+  
+  public SubLocal () {
+    this.id = 0L;
+    this.local = new Local();
+  }
 
   /**
    * @return the id

@@ -128,7 +128,7 @@ public class JdbcCategoriaDao implements CategoriaDao {
   
   public Categoria busca(String codCategoria) throws SQLException {
     Connection con = null;
-    Categoria categoria;
+    Categoria categoria = new Categoria();
 
     try {
       con = ConnectionFactory.getConnection();
@@ -146,8 +146,6 @@ public class JdbcCategoriaDao implements CategoriaDao {
 
       if (rs.next()) {
         categoria = instanciar(rs);
-      } else {
-        throw new SQLException("Nenhum registro encontrado.");
       }
 
       rs.close();
@@ -197,8 +195,9 @@ public class JdbcCategoriaDao implements CategoriaDao {
       @Override
       public void executar(Connection con) throws SQLException {
         PreparedStatement statement = con.prepareStatement(
-          "Update "+TABLE_CATEGORIA+" Set "+COLUMN_CODIGO+" = ?, "+COLUMN_NOME+" = ? \n"
-          + "Where "+COLUMN_ID+" = ?"
+          "Update "+TABLE_CATEGORIA
+          +" Set "+COLUMN_CODIGO+" = ?, "+COLUMN_NOME+" = ?"
+          + "\n Where "+COLUMN_ID+" = ?"
         );
 
         statement.setString(1, categoria.getCodigo());

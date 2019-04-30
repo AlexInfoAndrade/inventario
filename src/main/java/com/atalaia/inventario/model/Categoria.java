@@ -15,6 +15,7 @@ public class Categoria {
   private String nome;
   
   public Categoria () {
+    this.id = 0L;
     this.codigo = "0";
   }
   

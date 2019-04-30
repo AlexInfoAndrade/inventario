@@ -7,8 +7,6 @@ package com.atalaia.inventario.jdbc;
 
 import com.atalaia.inventario.dao.LocalDao;
 import com.atalaia.inventario.model.Local;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -91,7 +89,7 @@ public class JdbcLocalDao implements LocalDao {
   @Override
   public Local busca(long codigo) throws SQLException {
     Connection con = null;
-    Local local;
+    Local local = new Local();
 
     try {
       con = ConnectionFactory.getConnection();
@@ -108,8 +106,6 @@ public class JdbcLocalDao implements LocalDao {
 
       if (rs.next()) {
         local = instanciar(rs);
-      } else {
-        throw new SQLException("Nenhum registro encontrado.");
       }
 
       rs.close();
