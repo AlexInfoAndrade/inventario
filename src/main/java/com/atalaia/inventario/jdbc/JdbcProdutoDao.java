@@ -200,6 +200,7 @@ public class JdbcProdutoDao implements ProdutoDao {
   @Override
   public boolean adiciona(Produto produto) throws SQLException {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    //Fiz essa alteração de casa como teste....
   }
 
   @Override
