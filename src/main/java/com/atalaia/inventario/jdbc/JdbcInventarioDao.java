@@ -7,6 +7,7 @@ package com.atalaia.inventario.jdbc;
 
 import com.atalaia.inventario.dao.InventarioDao;
 import com.atalaia.inventario.model.Inventario;
+import com.atalaia.inventario.model.Lote;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,6 +104,44 @@ public class JdbcInventarioDao implements InventarioDao {
 
     return inventarios;
   }
+  
+  public List<Inventario> lista(Lote lote) throws SQLException {
+    Connection con = null;
+    List<Inventario> inventarios = new ArrayList<>();
+
+    try {
+      con = ConnectionFactory.getConnection();
+      PreparedStatement statement =
+          con.prepareStatement(
+              "Select "+COLUMN_ID
+              + "\n , "+COLUMN_INDICE
+              + "\n, "+COLUMN_EAN
+              + "\n, "+COLUMN_LOTE_ID
+              + "\n, "+COLUMN_QNT_OPERADOR
+              + "\n, "+COLUMN_QNT_AUDITOR
+              + "\n, "+COLUMN_ANALISAR
+              + "\n From "+TABLE_INVENTARIO
+              + "\n Where "+COLUMN_LOTE_ID+" = ?"
+          );
+      statement.setLong(1, lote.getId());
+      
+      ResultSet rs = statement.executeQuery();
+
+      while (rs.next()) {
+        inventarios.add(instanciar(rs));
+      }
+
+      rs.close();
+      statement.close();
+
+    } catch (Exception e) {
+      throw new SQLException(e);
+    } finally {
+      con.close();
+    }
+
+    return inventarios;
+  }
 
   @Override
   public Inventario busca(long codigo) throws SQLException {
@@ -151,7 +190,7 @@ public class JdbcInventarioDao implements InventarioDao {
     i.setId(rs.getLong(COLUMN_ID));
     i.setIndice(rs.getInt(COLUMN_INDICE));
     i.setEan(rs.getString(COLUMN_EAN));
-    //i.setLote(Falta fazer Dao Lote);
+    i.setLote(new JdbcLoteDao().busca(rs.getLong(COLUMN_LOTE_ID)));
     i.setQntOperador(rs.getFloat(COLUMN_QNT_OPERADOR));
     i.setQntAuditor(rs.getFloat(COLUMN_QNT_AUDITOR));
     i.setAnalisar(rs.getString(COLUMN_ANALISAR));
@@ -160,18 +199,83 @@ public class JdbcInventarioDao implements InventarioDao {
   }
 
   @Override
-  public boolean adiciona(Inventario inventario) throws SQLException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public boolean adiciona(final Inventario inventario) throws SQLException {
+    return ConnectionFactory.executaTransacao(new Transacao(){
+      @Override
+      public void executar(Connection con) throws SQLException {
+        PreparedStatement statement = con.prepareStatement(
+          "Insert Into "+TABLE_INVENTARIO
+          + "\n ( "
+          + "\n  `"+COLUMN_INDICE+"`"
+          + "\n, `"+COLUMN_EAN+"`"
+          + "\n, `"+COLUMN_LOTE_ID+"`"
+          + "\n, `"+COLUMN_QNT_OPERADOR+"`"
+          + "\n, `"+COLUMN_QNT_AUDITOR+"`"
+          + "\n, `"+COLUMN_ANALISAR+"`"
+          + "\n ) "
+          + "Values (?,?,?,?,?,?)"
+        );
+
+        statement.setInt(1, inventario.getIndice());
+        statement.setString(2, inventario.getEan());
+        statement.setLong(3, inventario.getLote().getId());
+        statement.setFloat(4, inventario.getQntOperador());
+        statement.setFloat(5, inventario.getQntAuditor());
+        statement.setString(6, inventario.getAnalisar());
+
+        statement.execute();
+        statement.close();
+      }
+	});
   }
 
   @Override
-  public boolean altera(Inventario inventario) throws SQLException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public boolean altera(final Inventario inventario) throws SQLException {
+    return ConnectionFactory.executaTransacao(new Transacao(){
+      @Override
+      public void executar(Connection con) throws SQLException {
+        PreparedStatement statement = con.prepareStatement(
+          "Update "+TABLE_INVENTARIO
+          + "\n Set "
+          + "\n  "+COLUMN_INDICE          +" = ?"
+          + "\n, "+COLUMN_EAN    +" = ?"
+          + "\n, "+COLUMN_LOTE_ID  +" = ?"
+          + "\n, "+COLUMN_QNT_OPERADOR  +" = ?"
+          + "\n, "+COLUMN_QNT_AUDITOR      +" = ?"
+          + "\n, "+COLUMN_ANALISAR +" = ?"
+          + "\n Where "+COLUMN_ID      +" = ?"
+        );
+
+        statement.setInt(1, inventario.getIndice());
+        statement.setString(2, inventario.getEan());
+        statement.setLong(3, inventario.getLote().getId());
+        statement.setFloat(4, inventario.getQntOperador());
+        statement.setFloat(5, inventario.getQntAuditor());
+        statement.setString(6, inventario.getAnalisar());
+        statement.setLong(7, inventario.getId());
+
+        statement.execute();
+        statement.close();
+      }
+	});
   }
 
   @Override
-  public boolean remove(Inventario inventario) throws SQLException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public boolean remove(final Inventario inventario) throws SQLException {
+    return ConnectionFactory.executaTransacao(new Transacao(){
+      @Override
+      public void executar(Connection con) throws SQLException {
+        PreparedStatement statement = con.prepareStatement(
+          "Delete From "+TABLE_INVENTARIO
+          + "\n Where "+COLUMN_ID+" = ?"
+        );
+
+        statement.setLong(1, inventario.getId());
+
+        statement.execute();
+        statement.close();
+      }
+	});
   }
   
 }
