@@ -10,15 +10,15 @@ package com.atalaia.inventario.model;
  * @author Alex
  */
 public enum Status{
-  NAO_COLETADO(1), 
-  ESTRAVIADO(0),
-  COLETADO(2),
-  IMPRESSO(3),
-  AUDITADO(4);
+  NAO_COLETADO("Não coletado"), 
+  ESTRAVIADO("Estraviado"),
+  COLETADO("Coletado"),
+  IMPRESSO("Impresso"),
+  AUDITADO("Auditado");
   
-  public int status;
+  public String status;
   
-  Status (int status) {
+  Status (String status) {
     this.status = status;
   }
 }

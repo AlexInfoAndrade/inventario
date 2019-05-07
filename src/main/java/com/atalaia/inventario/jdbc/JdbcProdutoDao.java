@@ -34,12 +34,14 @@ public class JdbcProdutoDao implements ProdutoDao {
     "CREATE TABLE IF NOT EXISTS " + TABLE_PRODUTO
     + "(" 
       + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-      + COLUMN_EAN + " TEXT NOT NULL, "
+      + COLUMN_EAN + " TEXT NOT NULL UNIQUE, "
       + COLUMN_DESCRICAO + " TEXT NOT NULL, "
       + COLUMN_VALOR_CUSTO + " REAL, "
       + COLUMN_VALOR_VENDA + " REAL, "
       + COLUMN_ESTOQUE + " REAL, "
-      + COLUMN_CATEGORIA_ID + " INTEGER "
+      + COLUMN_CATEGORIA_ID + " INTEGER, "
+      + "FOREIGN KEY ("+COLUMN_CATEGORIA_ID+") REFERENCES "
+        + JdbcCategoriaDao.TABLE_CATEGORIA + "("+JdbcCategoriaDao.COLUMN_ID+")"
     + ");"
   ;
   

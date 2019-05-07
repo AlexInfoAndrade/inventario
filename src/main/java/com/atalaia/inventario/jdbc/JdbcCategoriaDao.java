@@ -26,11 +26,17 @@ public class JdbcCategoriaDao implements CategoriaDao {
   public static final String COLUMN_CODIGO = "cat_codigo";
   public static final String COLUMN_NOME = "cat_nome";
   
+  public static final String FK_TABLE_LOTE_CATEGORIA = JdbcLoteCategoriaDao.TABLE_LOTE_CATEGORIA;
+  
+  public static final String FK_COLUMN_ID = JdbcLoteCategoriaDao.COLUMN_ID;
+  public static final String FK_COLUMN_LOTE_ID = JdbcLoteCategoriaDao.COLUMN_LOTE_ID;
+  public static final String FK_COLUMN_CATEGORIA_ID = JdbcLoteCategoriaDao.COLUMN_CATEGORIA_ID;
+  
   private static final String CREATE_TB_CATEGORIA = 
     "CREATE TABLE IF NOT EXISTS " + TABLE_CATEGORIA
     + "(" 
       + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-      + COLUMN_CODIGO + " INTEGER NOT NULL, "
+      + COLUMN_CODIGO + " INTEGER NOT NULL UNIQUE, "
       + COLUMN_NOME + " TEXT "
     + ");"
   ;
@@ -216,16 +222,20 @@ public class JdbcCategoriaDao implements CategoriaDao {
       @Override
       public void executar(Connection con) throws SQLException {
         PreparedStatement statement = con.prepareStatement(
-          "Delete From "+TABLE_CATEGORIA
-          + "\n Where "+COLUMN_ID+" = ?"
+          "Delete From "+FK_TABLE_LOTE_CATEGORIA
+          + "\n Where "+FK_COLUMN_CATEGORIA_ID+" = ?;"
+                  
+          + "\n Delete From "+TABLE_CATEGORIA
+          + "\n Where "+COLUMN_ID+" = ?;"
         );
 
         statement.setLong(1, categoria.getId());
+        statement.setLong(2, categoria.getId());
 
         statement.execute();
         statement.close();
       }
-	});
+    });
   }
   
 }

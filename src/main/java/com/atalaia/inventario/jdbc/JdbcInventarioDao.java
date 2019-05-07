@@ -41,7 +41,9 @@ public class JdbcInventarioDao implements InventarioDao {
       + COLUMN_LOTE_ID + " INTEGER NOT NULL, "
       + COLUMN_QNT_OPERADOR + " REAL NOT NULL, "
       + COLUMN_QNT_AUDITOR + " REAL, "
-      + COLUMN_ANALISAR + " TEXT NOT NULL "
+      + COLUMN_ANALISAR + " TEXT NOT NULL, "
+      + "FOREIGN KEY ("+COLUMN_LOTE_ID+") REFERENCES "
+        + JdbcLoteDao.TABLE_LOTE + "("+JdbcLoteDao.COLUMN_ID+")"
     + ");"
   ;
   
@@ -237,12 +239,12 @@ public class JdbcInventarioDao implements InventarioDao {
         PreparedStatement statement = con.prepareStatement(
           "Update "+TABLE_INVENTARIO
           + "\n Set "
-          + "\n  "+COLUMN_INDICE          +" = ?"
-          + "\n, "+COLUMN_EAN    +" = ?"
-          + "\n, "+COLUMN_LOTE_ID  +" = ?"
-          + "\n, "+COLUMN_QNT_OPERADOR  +" = ?"
-          + "\n, "+COLUMN_QNT_AUDITOR      +" = ?"
-          + "\n, "+COLUMN_ANALISAR +" = ?"
+          + "\n  "+COLUMN_INDICE       +" = ?"
+          + "\n, "+COLUMN_EAN          +" = ?"
+          + "\n, "+COLUMN_LOTE_ID      +" = ?"
+          + "\n, "+COLUMN_QNT_OPERADOR +" = ?"
+          + "\n, "+COLUMN_QNT_AUDITOR  +" = ?"
+          + "\n, "+COLUMN_ANALISAR     +" = ?"
           + "\n Where "+COLUMN_ID      +" = ?"
         );
 

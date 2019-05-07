@@ -31,7 +31,9 @@ public class JdbcSubLocalDao implements SubLocalDao {
     + "(" 
       + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
       + COLUMN_NOME + " TEXT NOT NULL, "
-      + COLUMN_LOCAL_ID + " INTEGER"
+      + COLUMN_LOCAL_ID + " INTEGER, "
+      + "FOREIGN KEY ("+COLUMN_LOCAL_ID+") REFERENCES "
+        + JdbcLocalDao.TABLE_LOCAL + "("+JdbcLocalDao.COLUMN_ID+")"
     + ");"
   ;
   
