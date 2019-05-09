@@ -12,6 +12,10 @@ package com.atalaia.inventario.model;
 public class Local {
   private Long id;
   private String nome;
+  
+  public Local () {
+    this.id = 0L;
+  }
 
   /**
    * @return the id

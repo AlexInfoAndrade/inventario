@@ -7,8 +7,6 @@ package com.atalaia.inventario.jdbc;
 
 import com.atalaia.inventario.dao.SubLocalDao;
 import com.atalaia.inventario.model.SubLocal;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,7 +31,9 @@ public class JdbcSubLocalDao implements SubLocalDao {
     + "(" 
       + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
       + COLUMN_NOME + " TEXT NOT NULL, "
-      + COLUMN_LOCAL_ID + " INTEGER"
+      + COLUMN_LOCAL_ID + " INTEGER, "
+      + "FOREIGN KEY ("+COLUMN_LOCAL_ID+") REFERENCES "
+        + JdbcLocalDao.TABLE_LOCAL + "("+JdbcLocalDao.COLUMN_ID+")"
     + ");"
   ;
   
@@ -128,7 +128,7 @@ public class JdbcSubLocalDao implements SubLocalDao {
   @Override
   public SubLocal busca(long codigo) throws SQLException {
     Connection con = null;
-    SubLocal subLocal;
+    SubLocal subLocal = new SubLocal();
 
     try {
       con = ConnectionFactory.getConnection();
@@ -146,8 +146,6 @@ public class JdbcSubLocalDao implements SubLocalDao {
 
       if (rs.next()) {
         subLocal = instanciar(rs);
-      } else {
-        throw new SQLException("Nenhum registro encontrado.");
       }
 
       rs.close();
